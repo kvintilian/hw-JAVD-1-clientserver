@@ -9,7 +9,8 @@ public class Main {
     private static final String HOST = "127.0.0.1";
     private static final int PORT = 40004;
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
+        /* Используем Blocking способ взаимодейтсвия, так как по задаче нет необходимости в асинхронном вводе-выводе  */
         new Thread(null, Main::startServer, "server").start();
         new Thread(null, Main::startClient, "client").start();
     }
