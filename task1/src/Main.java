@@ -1,40 +1,50 @@
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class Main {
 
+    private static final String HOST = "127.0.0.1";
+    private static final int PORT = 40004;
 
     public static void main(String[] args) throws InterruptedException {
-
-
-//        Thread server = new Thread(null, Main::startServer, "server");
-//        server.start();
-//        Thread client = new Thread(null, Main::startClient, "client");
-//        client.start();
-//        server.join();
-
-       
+        new Thread(null, Main::startServer, "server").start();
+        new Thread(null, Main::startClient, "client").start();
     }
 
+    public static String fibonacci(int number) {
+        BigDecimal n0 = new BigDecimal("1");
+        BigDecimal n1 = new BigDecimal("1");
+        BigDecimal n2 = new BigDecimal("0");
+        for (int i = 3; i <= number; i++) {
+            n2 = n0.add(n1);
+            n0 = n1;
+            n1 = n2;
+        }
+        return n2.toString();
+    }
 
     public static void startServer() {
-        // Занимаем порт, определяя серверный сокет
         try {
-            ServerSocket servSocket = new ServerSocket(23444);
-            while (true) {
-                // Ждем подключения клиента и получаем потоки для дальнейшей работы
+            ServerSocket servSocket = new ServerSocket(PORT);
+            while (!Thread.currentThread().isInterrupted()) {
                 try (Socket socket = servSocket.accept();
                      PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                      BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                     String line;
                     while ((line = in.readLine()) != null) {
-                        // Пишем ответ
-                        out.println("Echo: " + line);
-                        // Выход если от клиента получили end
                         if (line.equals("end")) {
-                            break;
+                            Thread.currentThread().interrupt();
+                            out.println("Сервер остановлен");
+                        } else {
+                            try {
+                                int number = Integer.parseInt(line.trim());
+                                out.println("Это число: " + fibonacci(number));
+                            } catch (NumberFormatException ignored) {
+                                out.println("Повторите ввод!");
+                            }
                         }
                     }
                 } catch (IOException ex) {
@@ -42,29 +52,27 @@ public class Main {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
     }
 
     public static void startClient() {
-        // Определяем сокет сервера
         try {
-            Socket socket = new Socket("127.0.0.1", 23444);
-            // Получаем входящий и исходящий потоки информации
+            Socket socket = new Socket(HOST, PORT);
             try (BufferedReader in = new BufferedReader(
                     new InputStreamReader(socket.getInputStream())); PrintWriter out = new PrintWriter(
                     new OutputStreamWriter(socket.getOutputStream()), true); Scanner scanner = new Scanner(System.in)) {
                 String msg;
-                while (true) {
-                    System.out.println("Enter message for server...");
+                while (!Thread.currentThread().isInterrupted()) {
+                    System.out.println("Введите номер числа Фибоначчи или end для выхода:");
                     msg = scanner.nextLine();
                     out.println(msg);
-                    if ("end".equals(msg)) break;
-                    System.out.println("SERVER: " + in.readLine());
+                    if ("end".equals(msg)) Thread.currentThread().interrupt();
+                    System.out.println(in.readLine());
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
     }
 }
