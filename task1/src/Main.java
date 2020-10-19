@@ -1,5 +1,5 @@
 import java.io.*;
-import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
@@ -16,9 +16,9 @@ public class Main {
     }
 
     public static String fibonacci(int number) {
-        BigDecimal n0 = new BigDecimal("1");
-        BigDecimal n1 = new BigDecimal("1");
-        BigDecimal n2 = new BigDecimal("0");
+        BigInteger n0 = new BigInteger("1");
+        BigInteger n1 = new BigInteger("1");
+        BigInteger n2 = new BigInteger("0");
         for (int i = 3; i <= number; i++) {
             n2 = n0.add(n1);
             n0 = n1;
